@@ -114,10 +114,13 @@ func TestFormatTrackRow(t *testing.T) {
 func TestProviderKeyForShortcut(t *testing.T) {
 	tests := map[string]string{
 		"S": "spotify",
+		"M": "applemusic",
 		"N": "navidrome",
 		"P": "plex",
 		"J": "jellyfin",
+		"E": "emby",
 		"Y": "yt",
+		"C": "soundcloud",
 		"L": "local",
 		"R": "radio",
 		"x": "",

@@ -351,6 +351,8 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			return m.switchToProvider("emby")
 		case "S":
 			return m.switchToProvider("spotify")
+		case "M":
+			return m.switchToProvider("applemusic")
 		case "C":
 			return m.switchToProvider("soundcloud")
 		case "L":
@@ -653,6 +655,8 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return m.saveTrack()
 	case "S":
 		return m.switchToProvider("spotify")
+	case "M":
+		return m.switchToProvider("applemusic")
 
 	case "m":
 		m.player.ToggleMono()

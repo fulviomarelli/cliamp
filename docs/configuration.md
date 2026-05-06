@@ -6,7 +6,8 @@ For remote providers (Navidrome, Plex, Jellyfin, Emby, Spotify, YouTube Music), 
 cliamp setup
 ```
 
-It validates your credentials live and writes the right TOML block without touching the rest of your config. See [cli.md](cli.md#setup-wizard) for details.
+It validates your credentials live and writes the right TOML block without touching the rest of your config. See [cli.md](cli.md#setup-wizard) for details.  
+Apple Music is configured manually (see [apple-music.md](apple-music.md)).
 
 For everything else, copy the example config and edit by hand:
 
@@ -84,6 +85,11 @@ token = "${EMBY_TOKEN}"
 [ytmusic]
 client_id = "${YTMUSIC_CLIENT_ID}"
 client_secret = "${YTMUSIC_CLIENT_SECRET}"
+
+[apple_music]
+enabled = true
+developer_token = "${APPLE_MUSIC_DEVELOPER_TOKEN}"
+storefront = "us"
 ```
 
 Rules:
@@ -101,7 +107,7 @@ Set which provider to start with:
 provider = "radio"
 ```
 
-Valid values: `radio` (default), `navidrome`, `spotify`, `plex`, `jellyfin`, `emby`, `soundcloud`, `yt`, `youtube`, `ytmusic`.
+Valid values: `radio` (default), `navidrome`, `spotify`, `plex`, `jellyfin`, `emby`, `applemusic`, `soundcloud`, `yt`, `youtube`, `ytmusic`.
 
 You can also override from the CLI: `cliamp --provider jellyfin`.
 

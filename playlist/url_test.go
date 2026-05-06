@@ -249,3 +249,32 @@ func TestIsXiaoyuzhouEpisode(t *testing.T) {
 		})
 	}
 }
+
+func TestIsAppleMusicURI(t *testing.T) {
+	tests := []struct {
+		path string
+		want bool
+	}{
+		{"applemusic:https://music.apple.com/us/song/id123", true},
+		{"https://music.apple.com/us/song/id123", false},
+		{"spotify:track:abc123", false},
+		{"", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			if got := IsAppleMusicURI(tt.path); got != tt.want {
+				t.Errorf("IsAppleMusicURI(%q) = %v, want %v", tt.path, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAppleMusicURL(t *testing.T) {
+	const raw = "https://music.apple.com/us/song/id123"
+	if got := AppleMusicURL("applemusic:" + raw); got != raw {
+		t.Errorf("AppleMusicURL extracted %q, want %q", got, raw)
+	}
+	if got := AppleMusicURL(raw); got != "" {
+		t.Errorf("AppleMusicURL(%q) = %q, want empty", raw, got)
+	}
+}

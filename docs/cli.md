@@ -55,7 +55,7 @@ cliamp search "never gonna give you up"       # search YouTube
 cliamp search-sc "lofi beats"                  # search SoundCloud
 ```
 
-Press `Ctrl+F` in the player for context-aware search: it runs the active provider's native search (Spotify) or searches YouTube.
+Press `Ctrl+F` in the player for context-aware search: it runs the active provider's native search (Spotify, Apple Music, etc.) or searches YouTube.
 
 ## General
 

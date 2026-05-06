@@ -147,6 +147,20 @@ type SoundCloudConfig struct {
 // IsSet reports whether the SoundCloud provider should be shown.
 func (s SoundCloudConfig) IsSet() bool { return s.Enabled }
 
+// AppleMusicConfig holds settings for the Apple Music catalog provider.
+// This provider is opt-in and requires enabled=true, a web bearer token, and a media user token.
+type AppleMusicConfig struct {
+	Enabled        bool   // true only when user explicitly sets enabled = true
+	WebBearerToken string // Apple Music public web API bearer token
+	MediaUserToken string // media-user-token cookie value
+	Storefront     string // storefront code, e.g. "us", "it"
+}
+
+// IsSet reports whether the Apple Music provider should be shown.
+func (a AppleMusicConfig) IsSet() bool {
+	return a.Enabled && strings.TrimSpace(a.WebBearerToken) != ""
+}
+
 // PlexConfig holds credentials for a Plex Media Server.
 // Both URL and Token must be non-empty for a client to be constructed.
 type PlexConfig struct {
@@ -203,7 +217,7 @@ type Config struct {
 	Speed           float64                      // playback speed ratio: 0.25–2.0 (default 1.0)
 	AutoPlay        bool                         // start playback automatically on launch (radio streams, CLI tracks)
 	SeekStepLarge   int                          // seconds for Shift+Left/Right seek jumps
-	Provider        string                       // default provider: "radio", "navidrome", "spotify", "plex", "jellyfin", "emby", "ytmusic" (default "radio")
+	Provider        string                       // default provider: "radio", "navidrome", "spotify", "plex", "jellyfin", "emby", "applemusic", "ytmusic" (default "radio")
 	Theme           string                       // theme name, or "" for ANSI default
 	Visualizer      string                       // visualizer mode name, or "" for default (Bars)
 	SampleRate      int                          // output sample rate: 22050, 44100, 48000, 96000, 192000
@@ -222,6 +236,7 @@ type Config struct {
 	Jellyfin        JellyfinConfig               // optional Jellyfin server credentials
 	Emby            EmbyConfig                   // optional Emby server credentials
 	SoundCloud      SoundCloudConfig             // SoundCloud provider (opt-in via enabled = true)
+	AppleMusic      AppleMusicConfig             // Apple Music catalog provider (opt-in via enabled = true)
 	Plugins         map[string]map[string]string // per-plugin config from [plugins.*] sections
 	LogLevel        string                       // log level: debug, info, warn, error (default "info")
 }
@@ -243,6 +258,7 @@ func defaultConfig() Config {
 		PaddingH:        3,
 		PaddingV:        1,
 		Spotify:         SpotifyConfig{Bitrate: 320},
+		AppleMusic:      AppleMusicConfig{Storefront: "us"},
 		LogLevel:        "info",
 	}
 }
@@ -361,6 +377,17 @@ func Load() (Config, error) {
 				cfg.SoundCloud.User = parseString(val)
 			case "cookies_from":
 				cfg.SoundCloud.CookiesFrom = parseString(val)
+			}
+		case "apple_music":
+			switch key {
+			case "enabled":
+				cfg.AppleMusic.Enabled = strings.ToLower(val) == "true"
+			case "web_bearer_token":
+				cfg.AppleMusic.WebBearerToken = parseString(val)
+			case "media_user_token":
+				cfg.AppleMusic.MediaUserToken = parseString(val)
+			case "storefront":
+				cfg.AppleMusic.Storefront = strings.ToLower(parseString(val))
 			}
 		case "jellyfin":
 			switch key {
@@ -676,6 +703,10 @@ func (c *Config) clamp() {
 	c.ResampleQuality = max(min(c.ResampleQuality, 4), 1)
 	c.BitDepth = clampBitDepth(c.BitDepth)
 	c.Spotify.Bitrate = clampSpotifyBitrate(c.Spotify.Bitrate)
+	c.AppleMusic.Storefront = strings.ToLower(strings.TrimSpace(c.AppleMusic.Storefront))
+	if c.AppleMusic.Storefront == "" {
+		c.AppleMusic.Storefront = "us"
+	}
 	c.PaddingH = max(min(c.PaddingH, 10), 0)
 	c.PaddingV = max(min(c.PaddingV, 5), 0)
 }

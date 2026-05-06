@@ -67,6 +67,8 @@ func providerKeyForShortcut(key string) string {
 	switch key {
 	case "S":
 		return "spotify"
+	case "M":
+		return "applemusic"
 	case "N":
 		return "navidrome"
 	case "P":
@@ -77,6 +79,8 @@ func providerKeyForShortcut(key string) string {
 		return "emby"
 	case "Y":
 		return "yt"
+	case "C":
+		return "soundcloud"
 	case "L":
 		return "local"
 	case "R":

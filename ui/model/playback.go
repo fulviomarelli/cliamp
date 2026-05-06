@@ -2,10 +2,13 @@ package model
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 
+	"cliamp/internal/browser"
 	"cliamp/playlist"
 )
 
@@ -147,6 +150,20 @@ func (m *Model) playTrack(track playlist.Track) tea.Cmd {
 		m.feedLoading = true
 		m.status.Show("Loading feed...", statusTTLLong)
 		return resolveFeedTrackCmd(track.Path)
+	}
+	if playlist.IsAppleMusicURI(track.Path) {
+		targetURL := strings.TrimSpace(playlist.AppleMusicURL(track.Path))
+		if targetURL == "" {
+			m.err = fmt.Errorf("apple music: missing target URL")
+			return nil
+		}
+		if err := browser.Open(targetURL); err != nil {
+			m.err = fmt.Errorf("apple music: open: %w", err)
+		} else {
+			m.err = nil
+			m.status.Show("Opened in Apple Music", statusTTLDefault)
+		}
+		return nil
 	}
 
 	m.reconnect.attempts = 0

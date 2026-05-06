@@ -1,4 +1,4 @@
-A retro terminal music player inspired by Winamp. Play local files, streams, podcasts, YouTube, YouTube Music, SoundCloud, Bilibili, Spotify, Xiaoyuzhou (小宇宙), Navidrome, Plex, and Jellyfin with a spectrum visualizer, parametric EQ, and playlist management.
+A retro terminal music player inspired by Winamp. Play local files, streams, podcasts, YouTube, YouTube Music, SoundCloud, Bilibili, Spotify, Apple Music (catalog + open externally), Xiaoyuzhou (小宇宙), Navidrome, Plex, and Jellyfin with a spectrum visualizer, parametric EQ, and playlist management.
 
 **[cliamp.stream](https://cliamp.stream)**
 
@@ -142,6 +142,7 @@ Or without Make: `go build -o cliamp .`
 - [SoundCloud](docs/soundcloud.md)
 - [Lyrics](docs/lyrics.md)
 - [Spotify](docs/spotify.md)
+- [Apple Music](docs/apple-music.md)
 - [Navidrome](docs/navidrome.md)
 - [Plex](docs/plex.md)
 - [Jellyfin](docs/jellyfin.md)

@@ -77,6 +77,21 @@ func IsURL(path string) bool {
 		IsYTSearch(path)
 }
 
+// IsAppleMusicURI reports whether path is an applemusic: pseudo-URI used to
+// represent "open in Apple Music" tracks.
+func IsAppleMusicURI(path string) bool {
+	return strings.HasPrefix(path, "applemusic:")
+}
+
+// AppleMusicURL extracts the target Apple Music web URL from an applemusic:
+// pseudo-URI. Returns "" when path is not an applemusic URI.
+func AppleMusicURL(path string) string {
+	if !IsAppleMusicURI(path) {
+		return ""
+	}
+	return strings.TrimPrefix(path, "applemusic:")
+}
+
 // IsYTSearch reports whether path is a yt-dlp search expression
 // (ytsearch:, ytsearchN:, scsearch:, scsearchN:).
 func IsYTSearch(path string) bool {

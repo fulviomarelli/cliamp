@@ -42,6 +42,7 @@ var providerEmptyStateHint = map[string]string{
 	"youtube music":   "Run `cliamp ytmusic-login` to authorize, then refresh.",
 	"ytmusic":         "Run `cliamp ytmusic-login` to authorize, then refresh.",
 	"soundcloud":      "Set [soundcloud] user in config.toml to browse a profile.",
+	"apple music":     "Set [apple_music] enabled=true and developer_token in config.toml.",
 }
 
 // renderProviderEmptyState explains why the playlists pane is empty for the

@@ -32,7 +32,7 @@ eq_preset = "Flat"
 # Only used when eq_preset is "Custom" or empty
 eq = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-# Default provider on startup: "radio", "navidrome", "spotify", "plex", "jellyfin", "emby", "soundcloud", or a YouTube provider
+# Default provider on startup: "radio", "navidrome", "spotify", "plex", "jellyfin", "emby", "applemusic", "soundcloud", or a YouTube provider
 # provider = "radio"
 
 # Compact mode: cap UI width at 80 columns (default: fluid/full-width)
@@ -84,6 +84,16 @@ eq = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 # enabled = true
 # user = "yourname"
 # cookies_from = "firefox"   # chrome, brave, edge, opera, safari, vivaldi…
+
+# ---
+# Apple Music (optional, catalog + open externally)
+# Requires enabled = true, a web bearer token, and a media-user-token cookie.
+# See docs/apple-music.md for extraction notes.
+# [apple_music]
+# enabled = true
+# web_bearer_token = "${APPLE_MUSIC_WEB_BEARER_TOKEN}"
+# media_user_token = "${APPLE_MUSIC_MEDIA_USER_TOKEN}"
+# storefront = "us"
 
 # ---
 # Plex Media Server (optional)

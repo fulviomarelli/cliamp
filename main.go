@@ -12,6 +12,7 @@ import (
 
 	"cliamp/applog"
 	"cliamp/config"
+	"cliamp/external/applemusic"
 	"cliamp/external/emby"
 	"cliamp/external/jellyfin"
 	"cliamp/external/local"
@@ -85,6 +86,10 @@ func run(overrides config.Overrides, positional []string) error {
 
 	if embyProv := emby.NewFromConfig(cfg.Emby); embyProv != nil {
 		providers = append(providers, model.ProviderEntry{Key: "emby", Name: "Emby", Provider: embyProv})
+	}
+
+	if appleProv := applemusic.NewFromConfig(cfg.AppleMusic); appleProv != nil {
+		providers = append(providers, model.ProviderEntry{Key: "applemusic", Name: "Apple Music", Provider: appleProv})
 	}
 
 	var spotifyProv *spotify.SpotifyProvider

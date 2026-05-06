@@ -49,6 +49,7 @@ var keymapEntries = []keymapEntry{
 	{key: "L", action: "Browse local playlists"},
 	{key: "R", action: "Open radio provider"},
 	{key: "S", action: "Open Spotify provider"},
+	{key: "M", action: "Open Apple Music provider"},
 	{key: "P", action: "Open Plex provider"},
 	{key: "Y", action: "Open YouTube provider"},
 	{key: "C", action: "Open SoundCloud provider"},
@@ -103,7 +104,7 @@ var coreReservedKeys = []string{
 	"r", "z", "m", "e", "a", "A",
 	"ctrl+s", "S", "/", "ctrl+f",
 	"ctrl+j", "J", "E", "p", "t", "i", "y", "o", "u",
-	"N", "L", "R", "P", "Y", "C",
+	"N", "L", "R", "P", "Y", "C", "M",
 	"v", "V", "ctrl+x", "d", "ctrl+k",
 	"ctrl+r",
 }

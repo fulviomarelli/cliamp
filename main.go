@@ -12,7 +12,6 @@ import (
 
 	"cliamp/applog"
 	"cliamp/config"
-	"cliamp/external/applemusic"
 	"cliamp/external/emby"
 	"cliamp/external/jellyfin"
 	"cliamp/external/local"
@@ -31,6 +30,7 @@ import (
 	"cliamp/mediactl"
 	"cliamp/player"
 	"cliamp/playlist"
+	"cliamp/provider/applemusic"
 	"cliamp/resolve"
 	"cliamp/theme"
 	"cliamp/ui"
@@ -89,9 +89,14 @@ func run(overrides config.Overrides, positional []string) error {
 	}
 
 	var appleProv *applemusic.Provider
-	if p := applemusic.NewFromConfig(cfg.AppleMusic); p != nil {
-		appleProv = p
-		providers = append(providers, model.ProviderEntry{Key: "applemusic", Name: "Apple Music", Provider: appleProv})
+	if cfg.AppleMusic.IsSet() {
+		if p, err := applemusic.NewProvider(); err == nil {
+			appleProv = p
+			providers = append(providers, model.ProviderEntry{Key: "applemusic", Name: "Apple Music", Provider: appleProv})
+		} else {
+			applog.Status("applemusic: %v", err)
+			fmt.Fprintf(os.Stderr, "applemusic init failed: %v\n", err)
+		}
 	}
 
 	var spotifyProv *spotify.SpotifyProvider
@@ -154,6 +159,9 @@ func run(overrides config.Overrides, positional []string) error {
 		}
 	}
 
+	if appleProv != nil {
+		defer appleProv.Close()
+	}
 	if spotifyProv != nil {
 		defer spotifyProv.Close()
 	}

@@ -5,10 +5,12 @@ go 1.26
 require (
 	charm.land/bubbletea/v2 v2.0.2
 	charm.land/lipgloss/v2 v2.0.2
+	github.com/chromedp/chromedp v0.15.1
 	github.com/devgianlu/go-librespot v0.7.1
 	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/gopxl/beep/v2 v2.1.1
+	github.com/gorilla/websocket v1.5.3
 	github.com/jfreymuth/oggvorbis v1.0.5
 	github.com/kkdai/youtube/v2 v2.10.6
 	github.com/minchao/go-apple-music v0.0.0-20230815040201-3b2aec2d7ffe
@@ -33,7 +35,6 @@ require (
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/chromedp/cdproto v0.0.0-20260321001828-e3e3800016bc // indirect
-	github.com/chromedp/chromedp v0.15.1 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
@@ -73,7 +74,6 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
-	github.com/webview/webview_go v0.0.0-20240831120633-6173450d4dd6 // indirect
 	github.com/xlab/vorbis-go v0.0.0-20210911202351-b5b85f1ec645 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect

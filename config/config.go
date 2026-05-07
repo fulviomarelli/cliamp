@@ -148,19 +148,16 @@ type SoundCloudConfig struct {
 func (s SoundCloudConfig) IsSet() bool { return s.Enabled }
 
 // AppleMusicConfig holds settings for the Apple Music catalog provider.
-// This provider is opt-in and requires enabled=true, a web bearer token, and a media user token.
+// This provider is opt-in and requires enabled=true. Authentication happens
+// via an automated browser session.
 type AppleMusicConfig struct {
-	Enabled        bool   // true only when user explicitly sets enabled = true
-	EnginePath     string // path to cliamp-applemusic-engine binary
-	Debug          bool   // enable engine debug mode (visible window + devtools)
-	WebBearerToken string // Apple Music public web API bearer token
-	MediaUserToken string // media-user-token cookie value
-	Storefront     string // storefront code, e.g. "us", "it"
+	Enabled    bool   // true only when user explicitly sets enabled = true
+	Storefront string // storefront code, e.g. "us", "it"
 }
 
 // IsSet reports whether the Apple Music provider should be shown.
 func (a AppleMusicConfig) IsSet() bool {
-	return a.Enabled && strings.TrimSpace(a.WebBearerToken) != ""
+	return a.Enabled
 }
 
 // PlexConfig holds credentials for a Plex Media Server.
@@ -384,14 +381,6 @@ func Load() (Config, error) {
 			switch key {
 			case "enabled":
 				cfg.AppleMusic.Enabled = strings.ToLower(val) == "true"
-			case "engine_path":
-				cfg.AppleMusic.EnginePath = parseString(val)
-			case "debug":
-				cfg.AppleMusic.Debug = strings.ToLower(val) == "true"
-			case "web_bearer_token":
-				cfg.AppleMusic.WebBearerToken = parseString(val)
-			case "media_user_token":
-				cfg.AppleMusic.MediaUserToken = parseString(val)
 			case "storefront":
 				cfg.AppleMusic.Storefront = strings.ToLower(parseString(val))
 			}

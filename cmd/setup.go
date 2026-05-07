@@ -264,6 +264,39 @@ func providers() []providerSpec {
 			},
 		},
 		{
+			key:     "applemusic",
+			name:    "Apple Music",
+			section: "apple_music",
+			intro: []string{
+				"Requires an active Apple Music subscription.",
+				"cliamp will open a browser window once to authenticate.",
+			},
+			picker: &pickerSpec{
+				key:   "_mode",
+				label: "Enable Apple Music",
+				options: []pickerOption{
+					{value: "yes", label: "Yes, enable Apple Music"},
+					{value: "no", label: "Disable Apple Music"},
+				},
+			},
+			fields: []fieldSpec{
+				{key: "storefront", label: "Storefront Code", help: "e.g. us, gb, it, au", defaultV: "us",
+					onlyIf: func(v map[string]string) bool { return v["_mode"] == "yes" }},
+			},
+			body: func(v map[string]string) string {
+				if v["_mode"] == "no" {
+					return "enabled = false"
+				}
+				lines := []string{"enabled = true"}
+				sf := v["storefront"]
+				if sf == "" {
+					sf = "us"
+				}
+				lines = append(lines, fmt.Sprintf("storefront = %q", sf))
+				return strings.Join(lines, "\n")
+			},
+		},
+		{
 			key:     "ytmusic",
 			name:    "YouTube Music",
 			section: "ytmusic",

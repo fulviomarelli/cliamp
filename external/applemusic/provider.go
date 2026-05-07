@@ -7,14 +7,21 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gopxl/beep/v2"
+
+	"cliamp/applog"
 	"cliamp/config"
+	"cliamp/external/applemusic/engineclient"
+	"cliamp/internal/amprotocol"
 	"cliamp/playlist"
 	"cliamp/provider"
 )
 
 var (
-	_ playlist.Provider = (*Provider)(nil)
-	_ provider.Searcher = (*Provider)(nil)
+	_ playlist.Provider       = (*Provider)(nil)
+	_ provider.Searcher       = (*Provider)(nil)
+	_ provider.CustomStreamer = (*Provider)(nil)
+	_ provider.Closer         = (*Provider)(nil)
 )
 
 const providerRequestTimeout = 20 * time.Second
@@ -23,6 +30,8 @@ const providerRequestTimeout = 20 * time.Second
 // It exposes catalog playlists/charts and opens tracks externally in Apple Music.
 type Provider struct {
 	client *apiClient
+	engine *engineclient.EngineClient
+	cfg    config.AppleMusicConfig
 
 	mu            sync.Mutex
 	playlistCache []playlist.PlaylistInfo
@@ -34,13 +43,54 @@ func NewFromConfig(cfg config.AppleMusicConfig) *Provider {
 		return nil
 	}
 
-	return &Provider{
+	p := &Provider{
 		client:     newAPIClient(cfg.WebBearerToken, cfg.MediaUserToken, cfg.Storefront),
+		engine:     engineclient.New(cfg.EnginePath, cfg.WebBearerToken, cfg.MediaUserToken, cfg.Storefront, cfg.Debug),
+		cfg:        cfg,
 		trackCache: make(map[string][]playlist.Track),
+	}
+	go p.handleEngineEvents()
+	return p
+}
+
+func (p *Provider) handleEngineEvents() {
+	for ev := range p.engine.Events() {
+		switch ev.Type {
+		case amprotocol.TypeError:
+			applog.Error("Apple Music Engine error: %s", ev.Message)
+		case amprotocol.TypeTrackChanged:
+			applog.Info("Apple Music: track changed to %s", ev.Track)
+		}
 	}
 }
 
 func (p *Provider) Name() string { return "Apple Music" }
+
+func (p *Provider) URISchemes() []string { return []string{"applemusic:"} }
+
+func (p *Provider) NewStreamer(uri string) (beep.StreamSeekCloser, beep.Format, time.Duration, error) {
+	// uri is "applemusic:https://music.apple.com/..."
+	// We need the track ID or the full URL for the engine.
+	// For now, pass the whole URI (stripped of prefix).
+	trackURL := strings.TrimPrefix(uri, "applemusic:")
+
+	if err := p.engine.SetQueue([]string{trackURL}, 0); err != nil {
+		return nil, beep.Format{}, 0, fmt.Errorf("apple music: set queue: %w", err)
+	}
+
+	if err := p.engine.Play(); err != nil {
+		return nil, beep.Format{}, 0, fmt.Errorf("apple music: play: %w", err)
+	}
+
+	s := p.engine.Streamer().(*engineclient.PCMStreamer)
+	return s, s.Format(), 0, nil
+}
+
+func (p *Provider) Close() {
+	if p.engine != nil {
+		p.engine.Close()
+	}
+}
 
 func (p *Provider) Playlists() ([]playlist.PlaylistInfo, error) {
 	p.mu.Lock()

@@ -151,6 +151,8 @@ func (s SoundCloudConfig) IsSet() bool { return s.Enabled }
 // This provider is opt-in and requires enabled=true, a web bearer token, and a media user token.
 type AppleMusicConfig struct {
 	Enabled        bool   // true only when user explicitly sets enabled = true
+	EnginePath     string // path to cliamp-applemusic-engine binary
+	Debug          bool   // enable engine debug mode (visible window + devtools)
 	WebBearerToken string // Apple Music public web API bearer token
 	MediaUserToken string // media-user-token cookie value
 	Storefront     string // storefront code, e.g. "us", "it"
@@ -382,6 +384,10 @@ func Load() (Config, error) {
 			switch key {
 			case "enabled":
 				cfg.AppleMusic.Enabled = strings.ToLower(val) == "true"
+			case "engine_path":
+				cfg.AppleMusic.EnginePath = parseString(val)
+			case "debug":
+				cfg.AppleMusic.Debug = strings.ToLower(val) == "true"
 			case "web_bearer_token":
 				cfg.AppleMusic.WebBearerToken = parseString(val)
 			case "media_user_token":

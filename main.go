@@ -88,7 +88,9 @@ func run(overrides config.Overrides, positional []string) error {
 		providers = append(providers, model.ProviderEntry{Key: "emby", Name: "Emby", Provider: embyProv})
 	}
 
-	if appleProv := applemusic.NewFromConfig(cfg.AppleMusic); appleProv != nil {
+	var appleProv *applemusic.Provider
+	if p := applemusic.NewFromConfig(cfg.AppleMusic); p != nil {
+		appleProv = p
 		providers = append(providers, model.ProviderEntry{Key: "applemusic", Name: "Apple Music", Provider: appleProv})
 	}
 
@@ -227,6 +229,9 @@ func run(overrides config.Overrides, positional []string) error {
 
 	if spotifyProv != nil {
 		p.RegisterStreamerFactory("spotify:", spotifyProv.NewStreamer)
+	}
+	if appleProv != nil {
+		p.RegisterStreamerFactory("applemusic:", appleProv.NewStreamer)
 	}
 
 	p.RegisterBufferedURLMatcher(func(u string) bool {

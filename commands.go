@@ -32,7 +32,7 @@ func buildApp() *cli.Command {
 		&cli.BoolFlag{Name: "no-mono", Usage: "disable mono output"},
 		&cli.BoolFlag{Name: "auto-play", Usage: "start playback immediately"},
 		&cli.BoolFlag{Name: "compact", Usage: "compact mode (80 columns)"},
-		&cli.StringFlag{Name: "provider", Usage: "default provider: radio, navidrome, plex, jellyfin, emby, spotify, soundcloud, yt, youtube, ytmusic"},
+		&cli.StringFlag{Name: "provider", Usage: "default provider: radio, navidrome, plex, jellyfin, emby, spotify, applemusic, soundcloud, yt, youtube, ytmusic"},
 		&cli.StringFlag{Name: "start-theme", Usage: "UI theme name"},
 		&cli.StringFlag{Name: "visualizer", Usage: "visualizer mode"},
 		&cli.StringFlag{Name: "eq-preset", Usage: "EQ preset name"},
@@ -296,10 +296,11 @@ func pluginsCommand() *cli.Command {
 func setupCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "setup",
-		Usage: "interactive wizard to configure remote providers",
+		Usage: "run the interactive configuration wizard",
 		Description: "Walks through configuring Navidrome, Plex, Jellyfin, Spotify,\n" +
-			"and YouTube Music. Validates connections and writes\n" +
+			"YouTube Music, and Apple Music. Validates connections and writes\n" +
 			"~/.config/cliamp/config.toml.",
+
 		Action: func(ctx context.Context, c *cli.Command) error {
 			return cmd.Setup()
 		},

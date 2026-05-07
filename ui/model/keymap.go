@@ -54,6 +54,7 @@ var keymapEntries = []keymapEntry{
 	{key: "C", action: "Open SoundCloud provider"},
 	{key: "J", action: "Open Jellyfin provider"},
 	{key: "E", action: "Open Emby provider"},
+	{key: "M", action: "Open Apple Music provider"},
 	{key: "Ctrl+J", action: "Jump to time"},
 	{key: "p", action: "Playlist manager"},
 	{key: "i", action: "Track info / metadata"},
@@ -102,7 +103,7 @@ var coreReservedKeys = []string{
 	// Features.
 	"r", "z", "m", "e", "a", "A",
 	"ctrl+s", "S", "/", "ctrl+f",
-	"ctrl+j", "J", "E", "p", "t", "i", "y", "o", "u",
+	"ctrl+j", "J", "E", "M", "p", "t", "i", "y", "o", "u",
 	"N", "L", "R", "P", "Y", "C",
 	"v", "V", "ctrl+x", "d", "ctrl+k",
 	"ctrl+r",

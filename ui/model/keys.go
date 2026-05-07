@@ -357,6 +357,8 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			return m.switchToProvider("local")
 		case "R":
 			return m.switchToProvider("radio")
+		case "M":
+			return m.switchToProvider("applemusic")
 		case "ctrl+x":
 			m.toggleExpandPlaylist()
 		case "ctrl+f":

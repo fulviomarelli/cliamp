@@ -147,6 +147,16 @@ type SoundCloudConfig struct {
 // IsSet reports whether the SoundCloud provider should be shown.
 func (s SoundCloudConfig) IsSet() bool { return s.Enabled }
 
+// AppleMusicConfig holds settings for the Apple Music provider.
+// Apple Music is opt-in: requires [applemusic] section in config.toml.
+type AppleMusicConfig struct {
+	Enabled bool // true when [applemusic] section exists
+	Visible bool // true to launch Chrome in visible mode (for login)
+}
+
+// IsSet reports whether the Apple Music provider should be shown.
+func (a AppleMusicConfig) IsSet() bool { return a.Enabled }
+
 // PlexConfig holds credentials for a Plex Media Server.
 // Both URL and Token must be non-empty for a client to be constructed.
 type PlexConfig struct {
@@ -218,6 +228,7 @@ type Config struct {
 	Navidrome       NavidromeConfig              // optional Navidrome/Subsonic server credentials
 	Spotify         SpotifyConfig                // optional Spotify provider (requires Premium)
 	YouTubeMusic    YouTubeMusicConfig           // optional YouTube Music provider
+	AppleMusic      AppleMusicConfig             // optional Apple Music provider
 	Plex            PlexConfig                   // optional Plex Media Server credentials
 	Jellyfin        JellyfinConfig               // optional Jellyfin server credentials
 	Emby            EmbyConfig                   // optional Emby server credentials
@@ -283,6 +294,8 @@ func Load() (Config, error) {
 			case "yt", "youtube", "ytmusic":
 				cfg.YouTubeMusic.Enabled = true
 				section = "ytmusic" // normalize for key parsing below
+			case "applemusic":
+				cfg.AppleMusic.Enabled = true
 			}
 			// Initialize plugin sub-maps for [plugins] and [plugins.*] sections.
 			if section == "plugins" || strings.HasPrefix(section, "plugins.") {
@@ -388,6 +401,14 @@ func Load() (Config, error) {
 			case "user_id":
 				cfg.Emby.UserID = parseString(val)
 			}
+		case "applemusic":
+			switch key {
+			case "enabled":
+				cfg.AppleMusic.Enabled = strings.ToLower(val) == "true"
+			case "visible":
+				cfg.AppleMusic.Visible = strings.ToLower(val) == "true"
+			}
+
 		default:
 			// Handle [plugins] and [plugins.*] sections.
 			if section == "plugins" || strings.HasPrefix(section, "plugins.") {

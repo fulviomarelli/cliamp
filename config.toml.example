@@ -32,7 +32,7 @@ eq_preset = "Flat"
 # Only used when eq_preset is "Custom" or empty
 eq = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-# Default provider on startup: "radio", "navidrome", "spotify", "plex", "jellyfin", "emby", "soundcloud", or a YouTube provider
+# Default provider on startup: "radio", "navidrome", "spotify", "applemusic", "plex", "jellyfin", "emby", "soundcloud", or a YouTube provider
 # provider = "radio"
 
 # Compact mode: cap UI width at 80 columns (default: fluid/full-width)
@@ -116,3 +116,8 @@ eq = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 # password = "secret"
 # token = "optional-api-key"
 # user_id = "optional-user-id"
+
+# ---
+# Apple Music (optional, opt-in)
+# [applemusic]
+# enabled = true

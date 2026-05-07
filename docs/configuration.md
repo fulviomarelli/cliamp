@@ -101,9 +101,26 @@ Set which provider to start with:
 provider = "radio"
 ```
 
-Valid values: `radio` (default), `navidrome`, `spotify`, `plex`, `jellyfin`, `emby`, `soundcloud`, `yt`, `youtube`, `ytmusic`.
+Valid values: `radio` (default), `navidrome`, `spotify`, `applemusic`, `plex`, `jellyfin`, `emby`, `soundcloud`, `yt`, `youtube`, `ytmusic`.
 
 You can also override from the CLI: `cliamp --provider jellyfin`.
+
+## Apple Music
+
+Apple Music is opt-in. Add the section to `~/.config/cliamp/config.toml` to register the provider:
+
+```toml
+[applemusic]
+enabled = true
+```
+
+### How it works
+
+Apple Music requires a valid login. On the first launch after enabling the provider, cliamp will boot a hidden Chrome instance (via `chromedp`). You may need to interact with the browser once to log in to `music.apple.com`. Once logged in, the session is persisted in `~/.config/cliamp/chrome-profile`.
+
+Audio is captured directly from the browser tab using a dynamically injected Chrome Extension and streamed back to cliamp via WebSocket. This ensures the visualizer and EQ work with Apple Music's DRM-protected content.
+
+Requires a local Chrome/Chromium installation.
 
 ## SoundCloud
 
@@ -168,6 +185,39 @@ See [audio-quality.md](audio-quality.md) for sample rate, buffer, bit depth, and
 cliamp uses ALSA for audio on Linux. WSL2 doesn't expose ALSA hardware directly, but WSLg provides a PulseAudio server that ALSA can route through.
 
 If you see errors like `ALSA lib pcm.c: Unknown PCM default`, fix it with two steps:
+
+**1. Install the ALSA PulseAudio plugin:**
+
+```sh
+sudo apt install libasound2-plugins
+```
+
+**2. Create `~/.asoundrc` to route ALSA through PulseAudio:**
+
+```sh
+cat > ~/.asoundrc << 'EOF'
+pcm.default pulse
+ctl.default pulse
+EOF
+```
+
+WSLg must be active (`echo $PULSE_SERVER` should print a path). If it's empty, ensure you're on Windows 11 with WSLg enabled and run `wsl --shutdown` then reopen your terminal.
+
+## ffmpeg (optional)
+
+AAC, ALAC (`.m4a`), Opus, and WMA playback requires [ffmpeg](https://ffmpeg.org/):
+
+```sh
+# Arch
+sudo pacman -S ffmpeg
+# Debian/Ubuntu
+sudo apt install ffmpeg
+# macOS
+brew install ffmpeg
+```
+
+MP3, WAV, FLAC, and OGG work without ffmpeg.
+ `ALSA lib pcm.c: Unknown PCM default`, fix it with two steps:
 
 **1. Install the ALSA PulseAudio plugin:**
 

@@ -81,6 +81,8 @@ func providerKeyForShortcut(key string) string {
 		return "local"
 	case "R":
 		return "radio"
+	case "M":
+		return "applemusic"
 	}
 	return ""
 }

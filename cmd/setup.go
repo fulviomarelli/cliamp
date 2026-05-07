@@ -310,6 +310,30 @@ func providers() []providerSpec {
 				}
 			},
 		},
+		{
+			key:     "applemusic",
+			name:    "Apple Music",
+			section: "applemusic",
+			intro: []string{
+				"Requires a valid Apple Music subscription.",
+				"cliamp will launch a hidden Chrome instance to handle playback.",
+				"You may need to log in to music.apple.com in the browser once.",
+			},
+			picker: &pickerSpec{
+				key:   "_enabled",
+				label: "Status",
+				options: []pickerOption{
+					{value: "on", label: "Enabled"},
+					{value: "off", label: "Disabled"},
+				},
+			},
+			body: func(v map[string]string) string {
+				if v["_enabled"] == "off" {
+					return "enabled = false"
+				}
+				return "enabled = true"
+			},
+		},
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 
 	"cliamp/applog"
 	"cliamp/config"
+	"cliamp/external/applemusic"
 	"cliamp/external/emby"
 	"cliamp/external/jellyfin"
 	"cliamp/external/local"
@@ -93,6 +94,17 @@ func run(overrides config.Overrides, positional []string) error {
 		providers = append(providers, model.ProviderEntry{Key: "spotify", Name: "Spotify", Provider: spotifyProv})
 	}
 
+	var amProv *applemusic.Provider
+	if cfg.AppleMusic.IsSet() {
+		var err error
+		amProv, err = applemusic.NewProvider()
+		if err != nil {
+			applog.Status("Apple Music: %v", err)
+		} else {
+			providers = append(providers, model.ProviderEntry{Key: "applemusic", Name: "Apple Music", Provider: amProv})
+		}
+	}
+
 	if scProv := soundcloud.NewFromConfig(soundcloud.Config{
 		Enabled:     cfg.SoundCloud.Enabled,
 		User:        cfg.SoundCloud.User,
@@ -149,6 +161,9 @@ func run(overrides config.Overrides, positional []string) error {
 
 	if spotifyProv != nil {
 		defer spotifyProv.Close()
+	}
+	if amProv != nil {
+		defer amProv.Close()
 	}
 	if ytProviders.Music != nil {
 		defer ytProviders.Music.Close()
@@ -222,6 +237,9 @@ func run(overrides config.Overrides, positional []string) error {
 
 	if spotifyProv != nil {
 		p.RegisterStreamerFactory("spotify:", spotifyProv.NewStreamer)
+	}
+	if amProv != nil {
+		p.RegisterStreamerFactory("applemusic:", amProv.NewStreamer)
 	}
 
 	p.RegisterBufferedURLMatcher(func(u string) bool {
@@ -388,7 +406,7 @@ func initLogging(levelStr string) (func() error, string, error) {
 	}
 	closeFn, err := applog.Init(filepath.Join(dir, "cliamp.log"), level)
 	if err != nil {
-		return noop, "", err
+		return noop, "", fmt.Errorf("init log: %w", err)
 	}
 	return closeFn, level.String(), nil
 }

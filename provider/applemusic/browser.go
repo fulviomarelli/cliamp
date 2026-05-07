@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/chromedp/chromedp"
+
 )
 
 // Browser wraps the chromedp context for controlling the Apple Music web session.
@@ -16,6 +19,14 @@ type Browser struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
 	allocCancel context.CancelFunc
+}
+
+// TriggerLogin opens the Apple Music sign‑in dialog.
+func (b *Browser) TriggerLogin() error {
+	// The sign‑in link has data-test-id="signin-link" on the Apple Music homepage.
+	return chromedp.Run(b.ctx,
+		chromedp.Click(`a[data-test-id="signin-link"]`, chromedp.NodeVisible),
+	)
 }
 
 // NewBrowser initializes the Chrome instance, loads the extension,
@@ -31,11 +42,25 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 	// with SingletonLock. We place it in ~/cliamp-chrome-profile to bypass this.
 	profileDir := filepath.Join(home, "cliamp-chrome-profile")
 
+	// Remove stale SingletonLock if present (Chrome may leave it on crash)
+	if lockPath := filepath.Join(profileDir, "SingletonLock"); true {
+		if _, err := os.Stat(lockPath); err == nil {
+			_ = os.Remove(lockPath)
+		}
+	}
+
+	// Proceed with ExecAllocator creation
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("load-extension", extPath),
 		chromedp.Flag("user-data-dir", profileDir),
 		chromedp.Flag("autoplay-policy", "no-user-gesture-required"),
 		chromedp.Flag("mute-audio", false), // Required so Chrome processes audio for tabCapture
+		chromedp.Flag("window-size", "1400,900"), // larger login window
+		chromedp.ModifyCmdFunc(func(cmd *exec.Cmd) {
+			cmd.SysProcAttr = &syscall.SysProcAttr{
+				Pdeathsig: syscall.SIGKILL,
+			}
+		}),
 	)
 
 	if headless {
@@ -69,6 +94,12 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 		return nil, fmt.Errorf("failed to navigate: %w", err)
 	}
 
+	// Trigger the login dialog automatically for headful mode
+	if !headless {
+		if err := b.TriggerLogin(); err != nil {
+			log.Printf("applemusic: failed to trigger login dialog: %v", err)
+		}
+	}
 	return b, nil
 }
 

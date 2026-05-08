@@ -23,10 +23,26 @@ type Browser struct {
 
 // TriggerLogin opens the Apple Music sign‑in dialog.
 func (b *Browser) TriggerLogin() error {
-	// The sign‑in link has data-test-id="signin-link" on the Apple Music homepage.
-	return chromedp.Run(b.ctx,
-		chromedp.Click(`a[data-test-id="signin-link"]`, chromedp.NodeVisible),
-	)
+	ctx, cancel := context.WithTimeout(b.ctx, 15*time.Second)
+	defer cancel()
+
+	script := `
+	new Promise(resolve => {
+		const check = () => {
+			const buttons = Array.from(document.querySelectorAll('button, a'));
+			const signInBtn = buttons.find(b => b.textContent && b.textContent.trim().toLowerCase() === 'sign in');
+			if (signInBtn) {
+				signInBtn.click();
+				resolve(true);
+				return;
+			}
+			setTimeout(check, 500);
+		};
+		check();
+	});
+	`
+	var res interface{}
+	return chromedp.Run(ctx, chromedp.Evaluate(script, &res))
 }
 
 // NewBrowser initializes the Chrome instance, loads the extension,
@@ -55,7 +71,6 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 		chromedp.Flag("user-data-dir", profileDir),
 		chromedp.Flag("autoplay-policy", "no-user-gesture-required"),
 		chromedp.Flag("mute-audio", false), // Required so Chrome processes audio for tabCapture
-		chromedp.Flag("window-size", "1400,900"), // larger login window
 		chromedp.ModifyCmdFunc(func(cmd *exec.Cmd) {
 			cmd.SysProcAttr = &syscall.SysProcAttr{
 				Pdeathsig: syscall.SIGKILL,
@@ -64,15 +79,23 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 	)
 
 	if headless {
-		opts = append(opts, chromedp.Flag("headless", "new"))
+		// Widevine DRM is disabled in headless Chrome, forcing Apple Music to play 30-sec previews.
+		// Workaround: Launch in headful mode but push the window completely off-screen.
+		opts = append(opts, chromedp.Flag("headless", false))
+		opts = append(opts, chromedp.Flag("window-position", "-2000,-2000"))
+		opts = append(opts, chromedp.Flag("window-size", "100,100"))
 	} else {
 		// DefaultExecAllocatorOptions includes Headless, so we must explicitly disable it
 		opts = append(opts, chromedp.Flag("headless", false))
+		opts = append(opts, chromedp.Flag("window-size", "1400,900")) // larger login window
 	}
 
 	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
 
-	ctx, cancel := chromedp.NewContext(allocCtx)
+	ctx, cancel := chromedp.NewContext(allocCtx,
+		chromedp.WithErrorf(func(string, ...interface{}) {}),
+		chromedp.WithLogf(func(string, ...interface{}) {}),
+	)
 
 	b := &Browser{
 		ctx:         ctx,
@@ -105,9 +128,27 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 
 // GetTokens retrieves the developer token and user token from the loaded MusicKit instance.
 func (b *Browser) GetTokens() (devToken string, userToken string, err error) {
+	devScript := `(() => {
+		try {
+			if (window.MusicKit && window.MusicKit.getInstance()) {
+				return window.MusicKit.getInstance().developerToken || "";
+			}
+		} catch (e) {}
+		return "";
+	})()`
+
+	userScript := `(() => {
+		try {
+			if (window.MusicKit && window.MusicKit.getInstance()) {
+				return window.MusicKit.getInstance().musicUserToken || "";
+			}
+		} catch (e) {}
+		return "";
+	})()`
+
 	err = chromedp.Run(b.ctx,
-		chromedp.Evaluate(`window.MusicKit.getInstance().developerToken`, &devToken),
-		chromedp.Evaluate(`window.MusicKit.getInstance().musicUserToken`, &userToken),
+		chromedp.Evaluate(devScript, &devToken),
+		chromedp.Evaluate(userScript, &userToken),
 	)
 	return
 }

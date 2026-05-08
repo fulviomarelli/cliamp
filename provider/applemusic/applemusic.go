@@ -45,8 +45,15 @@ func NewProvider() (*Provider, error) {
 		return nil, fmt.Errorf("failed to start headless browser (you may need to close other Chrome instances or use a non-snap Chrome): %w", err)
 	}
 
-	time.Sleep(2 * time.Second) // wait for JS to load
-	devToken, userToken, _ := b.GetTokens()
+	var devToken, userToken string
+	// Poll for up to 10 seconds to allow the page and MusicKit to fully load in the background
+	for i := 0; i < 10; i++ {
+		time.Sleep(1 * time.Second)
+		devToken, userToken, _ = b.GetTokens()
+		if userToken != "" {
+			break
+		}
+	}
 
 	if userToken == "" {
 		log.Println("applemusic: no active session found. Re-launching in visible mode for authentication...")
@@ -279,7 +286,6 @@ func (p *Provider) NewStreamer(uri string) (beep.StreamSeekCloser, beep.Format, 
 	id := strings.TrimPrefix(uri, "applemusic:track:")
 
 	// Tell the browser to play this track in the background
-	log.Printf("applemusic: asking browser to play track ID %s", id)
 	err := p.browser.PlayTrack(id)
 	if err != nil {
 		return nil, beep.Format{}, 0, fmt.Errorf("failed to play track in browser: %w", err)
@@ -298,13 +304,26 @@ func (p *Provider) NewStreamer(uri string) (beep.StreamSeekCloser, beep.Format, 
 
 	// Since it's a live streaming buffer, seeking isn't natively supported on the Streamer interface directly,
 	// but we implement a dummy StreamSeekCloser here to satisfy beep's requirements.
+	duration := time.Duration(0)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Storefront is required for Catalog search. We default to "us", but ideally we'd get the user's storefront.
+	res, _, errApi := p.apiClient.Catalog.GetSong(ctx, "us", id, nil)
+	if errApi == nil && res != nil && len(res.Data) > 0 {
+		duration = time.Duration(res.Data[0].Attributes.DurationInMillis) * time.Millisecond
+	} else if errApi != nil {
+		log.Printf("applemusic: failed to fetch track duration for %s: %v", id, errApi)
+	}
+
 	wrapped := &noopSeeker{
 		Streamer: streamer,
 		b:        p.browser,
-		duration: 0, // Duration could be passed or fetched via API
+		duration: duration,
 	}
 
-	return wrapped, format, 0, nil
+	// Provide the actual duration so the UI progress bar works!
+	return wrapped, format, duration, nil
 }
 
 // noopSeeker wraps the OpusStreamer to satisfy beep.StreamSeekCloser and delegates seeking to Chrome.

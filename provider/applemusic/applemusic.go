@@ -80,7 +80,18 @@ func NewProvider() (*Provider, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to restart headless browser after auth: %w", err)
 		}
-		time.Sleep(2 * time.Second)
+		
+		// Wait for session to be fully restored in the background browser
+		for i := 0; i < 15; i++ {
+			time.Sleep(1 * time.Second)
+			devToken, userToken, _ = b.GetTokens()
+			if userToken != "" {
+				break
+			}
+		}
+		if userToken == "" {
+			return nil, fmt.Errorf("failed to restore Apple Music session in background browser")
+		}
 	}
 
 	if devToken == "" || userToken == "" {
@@ -342,6 +353,12 @@ func (n *noopSeeker) Seek(p int) error {
 		n.pos = p
 	}
 	return err
+}
+
+func (n *noopSeeker) Stream(samples [][2]float64) (num int, ok bool) {
+	num, ok = n.Streamer.Stream(samples)
+	n.pos += num
+	return num, ok
 }
 
 func (n *noopSeeker) Position() int {

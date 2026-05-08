@@ -66,7 +66,12 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 	}
 
 	// Proceed with ExecAllocator creation
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+	// We MUST NOT use DefaultExecAllocatorOptions because it includes flags like 
+	// --disable-component-update which block the Widevine DRM component from loading!
+	opts := []chromedp.ExecAllocatorOption{
+		chromedp.NoFirstRun,
+		chromedp.NoDefaultBrowserCheck,
+		chromedp.ExecPath("/usr/bin/google-chrome"), // Force official Google Chrome to ensure Widevine is present
 		chromedp.Flag("load-extension", extPath),
 		chromedp.Flag("user-data-dir", profileDir),
 		chromedp.Flag("autoplay-policy", "no-user-gesture-required"),
@@ -76,7 +81,7 @@ func NewBrowser(extPath string, headless bool) (*Browser, error) {
 				Pdeathsig: syscall.SIGKILL,
 			}
 		}),
-	)
+	}
 
 	if headless {
 		// Widevine DRM is disabled in headless Chrome, forcing Apple Music to play 30-sec previews.
